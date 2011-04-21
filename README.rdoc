@@ -1,0 +1,38 @@
+= midi-jruby
+
+== Summary
+
+Perform low level, realtime MIDI input and output in JRuby
+
+== Features
+
+* Full input and output
+* Handle all MIDI Message types (including SysEx)
+* Timestamped input messages
+
+== Install
+
+* gem install midi-jruby
+	
+== Examples
+
+* {input}[http://github.com/arirusso/midi-jruby/blob/master/examples/input.rb]
+* {output}[http://github.com/arirusso/midi-jruby/blob/master/examples/output.rb]
+	
+== Tests
+
+* please see {test/config.rb}[http://github.com/arirusso/midi-jruby/blob/master/test/config.rb] before running tests
+
+== Documentation
+
+* {rdoc}[http://rdoc.info/gems/midi-jruby]
+
+== Author 
+
+{Ari Russo}[http://github.com/arirusso]
+		
+== License
+
+Apache 2.0, See the file LICENSE
+
+Copyright (c) 2010-2011 Ari Russo  
