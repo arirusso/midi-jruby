@@ -6,17 +6,25 @@ module MIDIJRuby
   #
   module Device
 
-    attr_reader :enabled, # has the device been initialized?
-                :id, # the id of the device
+                # has the device been initialized?
+    attr_reader :enabled,
+                # unique int id 
+                :id,
+                # name property from javax.sound.midi.MidiDevice.Info
                 :name,
+                # description property from javax.sound.midi.MidiDevice.Info
                 :description,
-                :type # :input or :output
+                # vendor property from javax.sound.midi.MidiDevice.Info
+                :vendor,
+                # :input or :output
+                :type 
 
     alias_method :enabled?, :enabled
     
     def initialize(id, device, options = {}, &block)
       @name = options[:name]
       @description = options[:description]
+      @vendor = options[:vendor]
       @id = id
       @device = device
 
@@ -39,19 +47,14 @@ module MIDIJRuby
     # a Hash of :input and :output devices
     def self.all_by_type
       available_devices = { :input => [], :output => [] }
-      count = 0
+      count = -1
       MidiSystem.get_midi_device_info.each do |info|
         device = MidiSystem.get_midi_device(info)
-        unless device.get_max_transmitters.zero?
-          output = Output.new(count, device, :name => info.get_name, :description => info.get_description)
-          count += 1 
-          available_devices[:output] << output
-        end
-        unless device.get_max_receivers.zero?
-          input = Input.new(count, device, :name => info.get_name, :description => info.get_description)
-          count += 1
-          available_devices[:input] << input
-        end 
+        opts = { :name => info.get_name, 
+                 :description => info.get_description, 
+                 :vendor => info.get_vendor }
+        available_devices[:output] << Output.new(count += 1, device, opts) unless device.get_max_receivers.zero?
+        available_devices[:input] << Input.new(count += 1, device, opts) unless device.get_max_transmitters.zero?
       end
       available_devices
     end

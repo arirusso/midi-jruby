@@ -19,6 +19,9 @@ module MIDIJRuby
 
     # sends a MIDI messages comprised of Numeric bytes 
     def puts_bytes(*data)
+      msg = ShortMessage.new
+      msg.set_message(*data)
+      @device.get_receiver.send(msg, 0)
     end
     
     # send a MIDI message of an indeterminant type
@@ -33,6 +36,7 @@ module MIDIJRuby
     
     # enable this device; also takes a block
     def enable(options = {}, &block)
+      @device.open
       @enabled = true
       unless block.nil?
         begin

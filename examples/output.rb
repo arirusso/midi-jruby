@@ -18,7 +18,7 @@ MIDIJRuby::Output.first.open do |output|
 
     notes.each do |note|
     	
-      output.puts(0x90, note + oct, 100) # note on
+      output.puts([0xF0, 0x41, 0x10, 0x42, 0x12, 0x40, 0x00, 0x7F, 0x00, 0x41, 0xF7]) # note on
       sleep(duration)				     # wait
       output.puts(0x80, note + oct, 100) # note off
       

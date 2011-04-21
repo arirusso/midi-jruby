@@ -6,9 +6,9 @@ Perform low level, realtime MIDI input and output in JRuby
 
 == Features
 
-* Full input and output
-* Handle all MIDI Message types (including SysEx)
-* Timestamped input messages
+* Input and output on multiple devices concurrently
+* Agnostically handle different MIDI Message types (including SysEx)
+* Timestamped input events
 
 == Install
 
@@ -29,7 +29,7 @@ Perform low level, realtime MIDI input and output in JRuby
 
 == Author 
 
-{Ari Russo}[http://github.com/arirusso]
+{Ari Russo}[http://github.com/arirusso] <ari.russo at gmail.com>
 		
 == License
 
