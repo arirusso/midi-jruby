@@ -12,7 +12,7 @@ duration = 0.1
 # MIDIJRuby::Device.all.to_s will list your midi devices
 # or amidi -l from the command line
 
-MIDIJRuby::Output.first.open do |output|
+MIDIJRuby::Output.all[1].open do |output|
 
   (0..((octaves-1)*12)).step(12) do |oct|
 

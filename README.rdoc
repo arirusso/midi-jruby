@@ -2,7 +2,7 @@
 
 == Summary
 
-Perform low level, realtime MIDI input and output in JRuby
+Realtime MIDI IO with JRuby.  A simple wrapper for javax.sound.midi.
 
 == Features
 

@@ -15,12 +15,23 @@ module MIDIJRuby
     
     # sends a MIDI message comprised of a String of hex digits 
     def puts_bytestr(data)
+      data = data.dup
+      output = []
+      until (str = data.slice!(0,2)).eql?("")
+        output << str.hex
+      end
+      puts_bytes(*output)
     end
 
     # sends a MIDI messages comprised of Numeric bytes 
     def puts_bytes(*data)
-      msg = ShortMessage.new
-      msg.set_message(*data)
+      if data.first.eql?(0xF0)
+        msg = SysexMessage.new
+        msg.set_message(data.to_java(:byte), data.length)
+      else
+        msg = ShortMessage.new
+        msg.set_message(*data)
+      end
       @device.get_receiver.send(msg, 0)
     end
     
