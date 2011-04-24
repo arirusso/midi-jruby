@@ -31,7 +31,14 @@ module MIDIJRuby
       end
       
       def send(msg, timestamp = -1)
-        @buffer << unpack(msg.get_packed_msg)
+        if msg.respond_to?(:get_packed_msg)
+          @buffer << unpack(msg.get_packed_msg)
+        else
+          str = String.from_java_bytes(msg.get_data)
+          arr = str.unpack("C" * str.length)
+          arr.insert(0, msg.get_status)
+          @buffer << arr 
+        end
       end      
       
       private
@@ -104,8 +111,8 @@ module MIDIJRuby
 
     # close this input
     def close
-      #@transmitter.get_receiver.close
-      #@transmitter.close
+      @transmitter.get_receiver.close
+      @transmitter.close
       @device.close
       @enabled = false
     end
