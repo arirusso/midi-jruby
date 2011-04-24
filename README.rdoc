@@ -4,7 +4,7 @@
 
 Simple MIDI wrapper for realtime IO in JRuby. Uses javax.sound.midi.
 
-Note: JRuby must be run in 1.9 mode by passing --1.9 to use this library
+Note: This library requires that JRuby be run in '1.9 mode'.  This is normally done by passing --1.9 to JRuby at the command line
 
 Also note that in the interest of allowing people on other platforms to utilize your code, you should consider using {unimidi}[http://github.com/arirusso/unimidi].  Unimidi is a platform independent wrapper which implements midi-jruby for users who are using jruby.  
 
