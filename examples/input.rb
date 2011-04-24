@@ -17,7 +17,7 @@ MIDIJRuby::Input.first.open do |input|
 
   num_messages.times do
     m = input.gets
-    $>.puts(m)
+    $>.puts(m.inspect)
   end
 
   $>.puts "finished"

@@ -6,15 +6,7 @@ require 'java'
 module MIDIJRuby
   
     VERSION = "0.0.1"
-    
-    midi = javax.sound.midi
-    import midi.MidiSystem
-    import midi.MidiDevice
-    import midi.MidiEvent
-    import midi.ShortMessage
-    import midi.Receiver 
-    import midi.SysexMessage
-    
+       
 end
  
 require 'midi-jruby/device'

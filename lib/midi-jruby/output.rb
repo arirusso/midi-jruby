@@ -4,6 +4,8 @@ module MIDIJRuby
   # Output device class
   #
   class Output
+    import javax.sound.midi.ShortMessage
+    import javax.sound.midi.SysexMessage
     
     include Device
     

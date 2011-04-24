@@ -5,6 +5,11 @@ module MIDIJRuby
   # ALSA driver interface
   #
   module Device
+    
+    import javax.sound.midi.MidiSystem
+    import javax.sound.midi.MidiDevice
+    import javax.sound.midi.MidiEvent
+    import javax.sound.midi.Receiver
 
                 # has the device been initialized?
     attr_reader :enabled,

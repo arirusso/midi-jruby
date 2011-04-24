@@ -2,7 +2,7 @@
 
 == Summary
 
-Realtime MIDI IO with JRuby.  A simple wrapper for javax.sound.midi.
+Simple MIDI wrapper for realtime IO in JRuby. Uses javax.sound.midi.
 
 == Features
 

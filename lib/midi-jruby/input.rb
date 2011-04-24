@@ -1,11 +1,52 @@
+require 'forwardable'
+
 module MIDIJRuby
-	
+		
   #
   # Input device class
   #
   class Input
     
+    import javax.sound.midi.Transmitter
+
     include Device
+    
+    class InputReceiver
+      
+      import java.io.ObjectInputStream
+      
+      include javax.sound.midi.Receiver
+      extend Forwardable
+    
+      attr_reader :stream
+
+      def initialize
+        @buffer = []
+      end
+      
+      def read
+        to_return = @buffer.dup
+        @buffer.clear
+        to_return
+      end
+      
+      def send(msg, timestamp = -1)
+        @buffer << unpack(msg.get_packed_msg)
+      end      
+      
+      private
+      
+      def unpack(msg)
+        # there's probably a better way of doing this
+        o = []
+        s = msg.to_s(16)
+        while s.length > 0 
+          o << s.slice!(0,2).hex
+        end
+        o.reverse        
+      end
+     
+    end
 
     #
     # returns an array of MIDI event hashes as such:
@@ -19,19 +60,27 @@ module MIDIJRuby
     # the timestamp is the number of millis since this input was enabled
     #
     def gets
- 
+      @listener.join
+      msgs = @buffer.dup
+      @buffer.clear
+      spawn_listener
+      msgs 
     end
     alias_method :read, :gets
     
     # same as gets but returns message data as String of hex digits
     def gets_bytestr
 
-    end
+    end 
 
     # enable this the input for use; can be passed a block
     def enable(options = {}, &block)
       @device.open
-      @receiver = device.get_receiver
+      @transmitter = @device.get_transmitter
+      @transmitter.set_receiver(InputReceiver.new)
+      @buffer = []
+      @start_time = Time.now.to_f
+      spawn_listener
       @enabled = true
       unless block.nil?
         begin
@@ -46,6 +95,8 @@ module MIDIJRuby
 
     # close this input
     def close
+      #@transmitter.get_receiver.close
+      #@transmitter.close
       @device.close
       @enabled = false
     end
@@ -60,6 +111,35 @@ module MIDIJRuby
     
     def self.all
       Device.all_by_type[:input]
+    end
+    
+    private
+    
+    # give a message its timestamp and package it in a Hash
+    def get_message_formatted(raw)
+      time = ((Time.now.to_f - @start_time) * 1000).to_i # same time format as winmm
+      { :data => raw, :timestamp => time }
+    end
+    
+    # launch a background thread that collects messages
+    def spawn_listener
+      @listener = Thread.fork do
+        while (msgs = @transmitter.get_receiver.read).empty? do
+          sleep(0.1)
+        end
+        msgs.each do |raw|
+          @buffer << get_message_formatted(raw)
+        end
+      end
+    end
+    
+    # convert byte str to byte array 
+    def message_to_hex(m)
+      s = []
+      until m.eql?("")
+      s << m.slice!(0, 2).hex
+      end
+      s
     end
 
   end
