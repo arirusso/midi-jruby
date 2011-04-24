@@ -4,6 +4,8 @@
 
 Simple MIDI wrapper for realtime IO in JRuby. Uses javax.sound.midi.
 
+Note that in the interest of allowing people on other platforms to utilize your code, you should consider using {unimidi}[http://github.com/arirusso/unimidi].  Unimidi is a platform independent wrapper which implements midi-jruby for users who are using jruby.  
+
 == Features
 
 * Input and output on multiple devices concurrently
@@ -35,4 +37,4 @@ Simple MIDI wrapper for realtime IO in JRuby. Uses javax.sound.midi.
 
 Apache 2.0, See the file LICENSE
 
-Copyright (c) 2010-2011 Ari Russo  
+Copyright (c) 2011 Ari Russo  
