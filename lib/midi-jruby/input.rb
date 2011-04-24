@@ -13,8 +13,6 @@ module MIDIJRuby
     
     class InputReceiver
       
-      import java.io.ObjectInputStream
-      
       include javax.sound.midi.Receiver
       extend Forwardable
     
@@ -84,6 +82,7 @@ module MIDIJRuby
     #
     #
     def gets_bytestr
+
       msgs = gets
       msgs.each { |msg| msg[:data] = msg[:data].map { |b| s = b.to_s(16).upcase; b < 16 ? s = "0" + s : s; s }.join }
       msgs  
@@ -111,7 +110,7 @@ module MIDIJRuby
 
     # close this input
     def close
-      @transmitter.get_receiver.close
+      @listener.kill
       @transmitter.close
       @device.close
       @enabled = false

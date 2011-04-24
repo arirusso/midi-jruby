@@ -37,4 +37,4 @@ Note that in the interest of allowing people on other platforms to utilize your 
 
 Apache 2.0, See the file LICENSE
 
-Copyright (c) 2011 Ari Russo  
+Copyright (c) 2011 Ari Russo
