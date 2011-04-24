@@ -1,8 +1,7 @@
 module MIDIJRuby
 
   #
-  # Module containing methods used by both input and output devices when using the
-  # ALSA driver interface
+  # Module containing methods used by both input and output devices
   #
   module Device
     
