@@ -31,6 +31,10 @@ There is an issue that causes javax.sound.midi not to be able to send SysEx mess
 	
 == Tests
 
+Use
+
+    jruby --1.9 -S rake test
+
 * please see {test/config.rb}[http://github.com/arirusso/midi-jruby/blob/master/test/config.rb] before running tests
 
 == Documentation
