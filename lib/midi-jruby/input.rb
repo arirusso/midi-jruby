@@ -146,7 +146,7 @@ module MIDIJRuby
     def spawn_listener
       @listener = Thread.fork do
         while (msgs = poll_system_buffer).empty? do
-          sleep(0.1)
+          sleep(0.05)
         end
         populate_local_buffers(msgs)
       end
