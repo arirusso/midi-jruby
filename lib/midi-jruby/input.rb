@@ -52,7 +52,7 @@ module MIDIJRuby
     end
     
     def buffer
-      populate_local_buffers(poll_system_buffer)
+      populate_local_buffer(poll_system_buffer)
       @buffer
     end
     
@@ -69,8 +69,8 @@ module MIDIJRuby
     #
     def gets
       @listener.join
-      msgs = @internal_buffer.dup
-      @internal_buffer.clear
+      msgs = @buffer.slice(@pointer, @buffer.length - @pointer)
+      @pointer += 1
       spawn_listener
       msgs 
     end
@@ -86,7 +86,7 @@ module MIDIJRuby
     #
     def gets_s
       msgs = gets
-      msgs.each { |msg| msg[:data] = msg[:data].map { |b| s = b.to_s(16).upcase; b < 16 ? s = "0" + s : s; s }.join }
+      msgs.each { |msg| msg[:data] = numeric_bytes_to_hex_string(msg[:data]) }
       msgs  
     end
     alias_method :gets_bytestr, :gets_s
@@ -97,7 +97,7 @@ module MIDIJRuby
       @device.open
       @transmitter = @device.get_transmitter
       @transmitter.set_receiver(InputReceiver.new)
-      @buffer, @internal_buffer = [], []
+      initialize_buffer
       @start_time = Time.now.to_f
       spawn_listener
       @enabled = true
@@ -136,6 +136,15 @@ module MIDIJRuby
     
     private
     
+    def initialize_buffer
+      @buffer = []
+      @pointer = 0
+      def @buffer.clear
+        @pointer = 0
+        super        
+      end
+    end
+    
     # give a message its timestamp and package it in a Hash
     def get_message_formatted(raw)
       time = ((Time.now.to_f - @start_time) * 1000).to_i # same time format as winmm
@@ -148,7 +157,7 @@ module MIDIJRuby
         while (msgs = poll_system_buffer).empty? do
           sleep(0.05)
         end
-        populate_local_buffers(msgs)
+        populate_local_buffer(msgs)
       end
     end
     
@@ -156,13 +165,15 @@ module MIDIJRuby
       @transmitter.get_receiver.read
     end
     
-    def populate_local_buffers(msgs)
+    def populate_local_buffer(msgs)
       msgs.each do |raw|
-        msg = get_message_formatted(raw)
-        @buffer << msg
-        @internal_buffer << msg          
+        @buffer << get_message_formatted(raw)          
       end      
     end
+    
+    def numeric_bytes_to_hex_string(bytes)
+      bytes.map { |b| s = b.to_s(16).upcase; b < 16 ? s = "0" + s : s; s }.join
+    end   
    
   end
 
