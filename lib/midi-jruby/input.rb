@@ -11,6 +11,8 @@ module MIDIJRuby
 
     include Device
     
+    attr_reader :buffer
+    
     class InputReceiver
       
       include javax.sound.midi.Receiver
@@ -19,23 +21,23 @@ module MIDIJRuby
       attr_reader :stream
 
       def initialize
-        @buffer = []
+        @buffer, @internal_buffer = [], []
       end
       
       def read
-        to_return = @buffer.dup
-        @buffer.clear
+        to_return = @internal_buffer.dup
+        @internal_buffer.clear
         to_return
       end
       
       def send(msg, timestamp = -1)
         if msg.respond_to?(:get_packed_msg)
-          @buffer << unpack(msg.get_packed_msg)
+          @internal_buffer << unpack(msg.get_packed_msg)
         else
           str = String.from_java_bytes(msg.get_data)
           arr = str.unpack("C" * str.length)
           arr.insert(0, msg.get_status)
-          @buffer << arr 
+          @internal_buffer << arr 
         end
       end      
       
@@ -66,8 +68,8 @@ module MIDIJRuby
     #
     def gets
       @listener.join
-      msgs = @buffer.dup
-      @buffer.clear
+      msgs = @internal_buffer.dup
+      @internal_buffer.clear
       spawn_listener
       msgs 
     end
@@ -82,7 +84,6 @@ module MIDIJRuby
     #
     #
     def gets_s
-
       msgs = gets
       msgs.each { |msg| msg[:data] = msg[:data].map { |b| s = b.to_s(16).upcase; b < 16 ? s = "0" + s : s; s }.join }
       msgs  
@@ -95,7 +96,7 @@ module MIDIJRuby
       @device.open
       @transmitter = @device.get_transmitter
       @transmitter.set_receiver(InputReceiver.new)
-      @buffer = []
+      @internal_buffer = []
       @start_time = Time.now.to_f
       spawn_listener
       @enabled = true
@@ -145,18 +146,20 @@ module MIDIJRuby
           sleep(0.1)
         end
         msgs.each do |raw|
-          @buffer << get_message_formatted(raw)
+          msg = hex_string_to_numeric_byte_array(raw)
+          @buffer << msg
+          @internal_buffer << msg          
         end
       end
     end
     
     # convert byte str to byte array 
-    def message_to_hex(m)
-      s = []
+    def hex_string_to_numeric_byte_array(str)
+      bytes = []
       until m.eql?("")
-      s << m.slice!(0, 2).hex
+        bytes << str.slice!(0, 2).hex
       end
-      s
+      bytes
     end
 
   end
