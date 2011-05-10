@@ -16,7 +16,7 @@ module MIDIJRuby
     end
     
     # sends a MIDI message comprised of a String of hex digits 
-    def puts_bytestr(data)
+    def puts_s(data)
       data = data.dup
       output = []
       until (str = data.slice!(0,2)).eql?("")
@@ -24,6 +24,8 @@ module MIDIJRuby
       end
       puts_bytes(*output)
     end
+    alias_method :puts_bytestr, :puts_s
+    alias_method :puts_hex, :puts_s
 
     # sends a MIDI messages comprised of Numeric bytes 
     def puts_bytes(*data)

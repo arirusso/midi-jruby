@@ -81,12 +81,14 @@ module MIDIJRuby
     # ]
     #
     #
-    def gets_bytestr
+    def gets_s
 
       msgs = gets
       msgs.each { |msg| msg[:data] = msg[:data].map { |b| s = b.to_s(16).upcase; b < 16 ? s = "0" + s : s; s }.join }
       msgs  
     end
+    alias_method :gets_bytestr, :gets_s
+    alias_method :gets_hex, :gets_s
 
     # enable this the input for use; can be passed a block
     def enable(options = {}, &block)
