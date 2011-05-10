@@ -27,6 +27,8 @@ class IoTest < Test::Unit::TestCase
           assert_equal(msg, received)
           
         end
+        
+        assert_equal(input.buffer.length, messages.length)
 
       end
     end
@@ -53,6 +55,8 @@ class IoTest < Test::Unit::TestCase
           assert_equal(msg, received)
           
         end
+        
+        assert_equal(input.buffer.length, messages.length)
       end
     end
 
