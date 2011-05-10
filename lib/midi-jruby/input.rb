@@ -1,5 +1,3 @@
-require 'forwardable'
-
 module MIDIJRuby
 		
   #
@@ -21,23 +19,23 @@ module MIDIJRuby
       attr_reader :stream
 
       def initialize
-        @buffer, @internal_buffer = [], []
+        @buf = []
       end
       
       def read
-        to_return = @internal_buffer.dup
-        @internal_buffer.clear
+        to_return = @buf.dup
+        @buf.clear
         to_return
       end
       
       def send(msg, timestamp = -1)
         if msg.respond_to?(:get_packed_msg)
-          @internal_buffer << unpack(msg.get_packed_msg)
+          @buf << unpack(msg.get_packed_msg)
         else
           str = String.from_java_bytes(msg.get_data)
           arr = str.unpack("C" * str.length)
           arr.insert(0, msg.get_status)
-          @internal_buffer << arr 
+          @buf << arr 
         end
       end      
       
@@ -54,7 +52,7 @@ module MIDIJRuby
       end
      
     end
-
+    
     #
     # returns an array of MIDI event hashes as such:
     # [
@@ -96,7 +94,7 @@ module MIDIJRuby
       @device.open
       @transmitter = @device.get_transmitter
       @transmitter.set_receiver(InputReceiver.new)
-      @internal_buffer = []
+      @buffer, @internal_buffer = [], []
       @start_time = Time.now.to_f
       spawn_listener
       @enabled = true
@@ -106,6 +104,8 @@ module MIDIJRuby
         ensure
           close
         end
+      else
+        self
       end
     end
     alias_method :open, :enable
@@ -146,7 +146,7 @@ module MIDIJRuby
           sleep(0.1)
         end
         msgs.each do |raw|
-          msg = hex_string_to_numeric_byte_array(raw)
+          msg = get_message_formatted(raw)
           @buffer << msg
           @internal_buffer << msg          
         end
@@ -154,13 +154,13 @@ module MIDIJRuby
     end
     
     # convert byte str to byte array 
-    def hex_string_to_numeric_byte_array(str)
-      bytes = []
-      until m.eql?("")
-        bytes << str.slice!(0, 2).hex
-      end
-      bytes
-    end
+    #def hex_string_to_numeric_byte_array(str)
+    #  bytes = []
+    #  until str.eql?("")
+    #    bytes << str.slice!(0, 2).hex
+    #  end
+    #  bytes
+    #end
 
   end
 
