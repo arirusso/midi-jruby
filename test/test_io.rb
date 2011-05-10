@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require File.dirname(__FILE__) + '/test_helper'
+require 'helper'
 
 class IoTest < Test::Unit::TestCase
 
@@ -22,7 +22,6 @@ class IoTest < Test::Unit::TestCase
           output.puts(msg)
 
           received = input.gets.first[:data]
-          #received_ints = bytestrs_to_ints(received)
           $>.puts "received: " + received.inspect
 
           assert_equal(msg, received)
@@ -48,7 +47,7 @@ class IoTest < Test::Unit::TestCase
 
           output.puts(msg)
 
-          received = input.gets_bytestr.first[:data]
+          received = input.gets_s.first[:data]
           $>.puts "received: " + received.inspect
 
           assert_equal(msg, received)
