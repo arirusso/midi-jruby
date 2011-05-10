@@ -9,8 +9,6 @@ module MIDIJRuby
 
     include Device
     
-    attr_reader :buffer
-    
     class InputReceiver
       
       include javax.sound.midi.Receiver
@@ -51,6 +49,11 @@ module MIDIJRuby
         o.reverse        
       end
      
+    end
+    
+    def buffer
+      populate_local_buffers(poll_system_buffer)
+      @buffer
     end
     
     #
@@ -142,26 +145,25 @@ module MIDIJRuby
     # launch a background thread that collects messages
     def spawn_listener
       @listener = Thread.fork do
-        while (msgs = @transmitter.get_receiver.read).empty? do
+        while (msgs = poll_system_buffer).empty? do
           sleep(0.1)
         end
-        msgs.each do |raw|
-          msg = get_message_formatted(raw)
-          @buffer << msg
-          @internal_buffer << msg          
-        end
+        populate_local_buffers(msgs)
       end
     end
     
-    # convert byte str to byte array 
-    #def hex_string_to_numeric_byte_array(str)
-    #  bytes = []
-    #  until str.eql?("")
-    #    bytes << str.slice!(0, 2).hex
-    #  end
-    #  bytes
-    #end
-
+    def poll_system_buffer
+      @transmitter.get_receiver.read
+    end
+    
+    def populate_local_buffers(msgs)
+      msgs.each do |raw|
+        msg = get_message_formatted(raw)
+        @buffer << msg
+        @internal_buffer << msg          
+      end      
+    end
+   
   end
 
 end
