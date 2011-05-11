@@ -70,7 +70,7 @@ module MIDIJRuby
     def gets
       @listener.join
       msgs = @buffer.slice(@pointer, @buffer.length - @pointer)
-      @pointer += 1
+      @pointer = @buffer.length
       spawn_listener
       msgs 
     end
@@ -166,9 +166,7 @@ module MIDIJRuby
     end
     
     def populate_local_buffer(msgs)
-      msgs.each do |raw|
-        @buffer << get_message_formatted(raw)          
-      end      
+      msgs.each { |raw| @buffer << get_message_formatted(raw) }
     end
     
     def numeric_bytes_to_hex_string(bytes)
