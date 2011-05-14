@@ -1,5 +1,5 @@
 module MIDIJRuby
-		
+    
   #
   # Input device class
   #
@@ -8,6 +8,8 @@ module MIDIJRuby
     import javax.sound.midi.Transmitter
 
     include Device
+    
+    attr_reader :buffer
     
     class InputReceiver
       
@@ -51,11 +53,6 @@ module MIDIJRuby
      
     end
     
-    def buffer
-      populate_local_buffer(poll_system_buffer)
-      @buffer
-    end
-    
     #
     # returns an array of MIDI event hashes as such:
     # [
@@ -68,8 +65,8 @@ module MIDIJRuby
     # the timestamp is the number of millis since this input was enabled
     #
     def gets
-      @listener.join
-      msgs = @buffer.slice(@pointer, @buffer.length - @pointer)
+      request_queued_messages!
+      msgs = queued_messages
       @pointer = @buffer.length
       spawn_listener
       msgs 
@@ -101,6 +98,7 @@ module MIDIJRuby
       @start_time = Time.now.to_f
       spawn_listener
       @enabled = true
+      @report = false
       unless block.nil?
         begin
           block.call(self)
@@ -123,11 +121,11 @@ module MIDIJRuby
     end
     
     def self.first
-      Device.first(:input)	
+      Device.first(:input)  
     end
 
     def self.last
-      Device.last(:input)	
+      Device.last(:input) 
     end
     
     def self.all
@@ -145,18 +143,42 @@ module MIDIJRuby
       end
     end
     
+    def now
+      ((Time.now.to_f - @start_time) * 1000)
+    end
+    
     # give a message its timestamp and package it in a Hash
-    def get_message_formatted(raw, time)
+    def get_message_formatted(raw, time) 
       { :data => raw, :timestamp => time }
+    end
+    
+    def queued_messages
+      @buffer.slice(@pointer, @buffer.length - @pointer)
+    end
+    
+    def queued_messages?
+      @pointer < @buffer.length
+    end
+    
+    def request_queued_messages!
+      @report = true
+      @listener.join      
+    end
+    
+    def queued_messages_requested?
+      queued_messages? && @report 
     end
     
     # launch a background thread that collects messages
     def spawn_listener
+      @report = false
       @listener = Thread.fork do
-        while (msgs = poll_system_buffer).empty? do
-          #sleep(1.0/128.0)
+        until @report          
+          while (msgs = poll_system_buffer).empty? && !queued_messages_requested?
+            sleep(1.0/1000)
+          end
+          populate_local_buffer(msgs) unless msgs.empty?
         end
-        populate_local_buffer(msgs)
       end
     end
     
@@ -164,14 +186,8 @@ module MIDIJRuby
       @transmitter.get_receiver.read
     end
     
-    def now
-      ((Time.now.to_f - @start_time) * 1000).to_i # same time format as winmm
-    end
-    
     def populate_local_buffer(msgs)
-      msgs.each do |raw| 
-        @buffer << get_message_formatted(raw, now)
-      end
+      msgs.each { |raw| @buffer << get_message_formatted(raw, now) unless raw.nil? }
     end
     
     def numeric_bytes_to_hex_string(bytes)
