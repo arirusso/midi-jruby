@@ -65,11 +65,11 @@ module MIDIJRuby
     # the timestamp is the number of millis since this input was enabled
     #
     def gets
-      request_queued_messages!
+      until queued_messages?
+      end
       msgs = queued_messages
       @pointer = @buffer.length
-      spawn_listener
-      msgs 
+      msgs
     end
     alias_method :read, :gets
     
@@ -96,9 +96,8 @@ module MIDIJRuby
       @transmitter.set_receiver(InputReceiver.new)
       initialize_buffer
       @start_time = Time.now.to_f
-      spawn_listener
+      spawn_listener!
       @enabled = true
-      @report = false
       unless block.nil?
         begin
           block.call(self)
@@ -160,21 +159,11 @@ module MIDIJRuby
       @pointer < @buffer.length
     end
     
-    def request_queued_messages!
-      @report = true
-      @listener.join      
-    end
-    
-    def queued_messages_requested?
-      queued_messages? && @report 
-    end
-    
     # launch a background thread that collects messages
-    def spawn_listener
-      @report = false
+    def spawn_listener!
       @listener = Thread.fork do
-        until @report          
-          while (msgs = poll_system_buffer).empty? && !queued_messages_requested?
+        while true          
+          while (msgs = poll_system_buffer).empty?
             sleep(1.0/1000)
           end
           populate_local_buffer(msgs) unless msgs.empty?
