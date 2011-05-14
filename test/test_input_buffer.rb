@@ -24,7 +24,7 @@ class InputBufferTest < Test::Unit::TestCase
           
           bytes += msg 
           
-          sleep(0.5)
+          sleep(1)
           
           buffer = input.buffer.map { |m| m[:data] }.flatten
 
