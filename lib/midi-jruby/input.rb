@@ -30,7 +30,8 @@ module MIDIJRuby
       
       def send(msg, timestamp = -1)
         if msg.respond_to?(:get_packed_msg)
-          @buf << unpack(msg.get_packed_msg)
+          m = msg.get_packed_msg
+          @buf << unpack(m)
         else
           str = String.from_java_bytes(msg.get_data)
           arr = str.unpack("C" * str.length)
@@ -45,6 +46,7 @@ module MIDIJRuby
         # there's probably a better way of doing this
         o = []
         s = msg.to_s(16)
+        s = "0" + s if s.length.divmod(2).last > 0
         while s.length > 0 
           o << s.slice!(0,2).hex
         end
@@ -98,7 +100,7 @@ module MIDIJRuby
       @start_time = Time.now.to_f
       spawn_listener!
       @enabled = true
-      unless block.nil?
+      if block_given?
         begin
           block.call(self)
         ensure
