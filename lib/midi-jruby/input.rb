@@ -45,8 +45,7 @@ module MIDIJRuby
       def unpack(msg)
         # there's probably a better way of doing this
         o = []
-        s = msg.to_s(16)
-        s = "0" + s if s.length.divmod(2).last > 0
+        s = msg.to_s(16).rjust(6,"0")
         while s.length > 0 
           o << s.slice!(0,2).hex
         end
