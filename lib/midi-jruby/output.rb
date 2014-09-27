@@ -1,33 +1,34 @@
 module MIDIJRuby
   
-  #
   # Output device class
-  #
   class Output
+
     import javax.sound.midi.ShortMessage
     import javax.sound.midi.SysexMessage
     
     include Device
     
-    # close this output
+    # Close this output
     def close
       @device.close
       @enabled = false
     end
     
-    # sends a MIDI message comprised of a String of hex digits 
+    # Output the given MIDI message
+    # @param [String] data A MIDI message expressed as a string of hex digits 
     def puts_s(data)
       data = data.dup
       output = []
-      until (str = data.slice!(0,2)).eql?("")
-        output << str.hex
+      until (string = data.slice!(0,2)) == ""
+        output << string.hex
       end
       puts_bytes(*output)
     end
     alias_method :puts_bytestr, :puts_s
     alias_method :puts_hex, :puts_s
 
-    # sends a MIDI messages comprised of Numeric bytes 
+    # Output the given MIDI message
+    # @param [*Fixnum] data A MIDI messages expressed as Numeric bytes 
     def puts_bytes(*data)
       if data.first.eql?(0xF0)
         msg = SysexMessage.new
@@ -39,23 +40,24 @@ module MIDIJRuby
       @device.get_receiver.send(msg, 0)
     end
     
-    # send a MIDI message of an indeterminant type
-    def puts(*a)
-      case a.first
-        when Array then puts_bytes(*a.first)
-        when Numeric then puts_bytes(*a)
-        when String then puts_bytestr(*a)
+    # Output the given MIDI message
+    # @param [*Fixnum, *String] args 
+    def puts(*args)
+      case args.first
+        when Array then puts_bytes(*args.first)
+        when Numeric then puts_bytes(*args)
+        when String then puts_bytestr(*args)
       end
     end
     alias_method :write, :puts
     
-    # enable this device; also takes a block
+    # Enable this device; also takes a block
     def enable(options = {}, &block)
       @device.open
       @enabled = true
-      unless block.nil?
+      if block_given?
         begin
-          block.call(self)
+          yield(self)
         ensure
           close
         end
@@ -66,14 +68,17 @@ module MIDIJRuby
     alias_method :open, :enable
     alias_method :start, :enable
     
+    # Select the first output
     def self.first
       Device.first(:output) 
     end
 
+    # Select the last output
     def self.last
       Device.last(:output)  
     end
     
+    # All outputs
     def self.all
       Device.all_by_type[:output]
     end

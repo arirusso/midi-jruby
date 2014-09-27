@@ -21,8 +21,7 @@ module MIDIJRuby
     # The timestamp is the number of millis since this input was enabled
     #
     def gets
-      until queued_messages?
-      end
+      loop until queued_messages?
       messages = queued_messages
       @pointer = @buffer.length
       messages
@@ -171,11 +170,11 @@ module MIDIJRuby
       
       def send(message, timestamp = -1)
         if message.respond_to?(:get_packed_message)
-          m = message.get_packed_message
-          @buf << unpack(m)
+          packed = message.get_packed_message
+          @buf << unpack(packed)
         else
-          str = String.from_java_bytes(message.get_data)
-          arr = str.unpack("C" * str.length)
+          string = String.from_java_bytes(message.get_data)
+          arr = str.unpack("C" * string.length)
           arr.insert(0, message.get_status)
           @buf << arr 
         end
