@@ -123,11 +123,15 @@ module MIDIJRuby
     # Launch a background thread that collects messages
     def spawn_listener
       @listener = Thread.new do
-        loop do        
-          while (messages = poll_system_buffer).empty?
-            sleep(1.0/1000)
+        begin
+          loop do        
+            while (messages = poll_system_buffer).empty?
+              sleep(1.0/1000)
+            end
+            populate_local_buffer(messages) unless messages.empty?
           end
-          populate_local_buffer(messages) unless messages.empty?
+        rescue Exception => exception
+          Thread.main.raise(exception)
         end
       end
     end
