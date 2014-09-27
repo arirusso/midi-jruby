@@ -1,8 +1,6 @@
 module MIDIJRuby
 
-  #
-  # Module containing methods used by both input and output devices
-  #
+  # Common methods used by both input and output devices
   module Device
     
     import javax.sound.midi.MidiSystem
@@ -10,18 +8,12 @@ module MIDIJRuby
     import javax.sound.midi.MidiEvent
     import javax.sound.midi.Receiver
 
-                # has the device been initialized?
-    attr_reader :enabled,
-                # unique int id 
-                :id,
-                # name property from javax.sound.midi.MidiDevice.Info
-                :name,
-                # description property from javax.sound.midi.MidiDevice.Info
-                :description,
-                # vendor property from javax.sound.midi.MidiDevice.Info
-                :vendor,
-                # :input or :output
-                :type 
+    attr_reader :enabled, # has the device been initialized?
+                :id, # unique int id
+                :name, # name property from javax.sound.midi.MidiDevice.Info
+                :description, # description property from javax.sound.midi.MidiDevice.Info
+                :vendor, # vendor property from javax.sound.midi.MidiDevice.Info
+                :type # :input or :output 
 
     alias_method :enabled?, :enabled
     
@@ -32,40 +24,53 @@ module MIDIJRuby
       @id = id
       @device = device
 
-      # cache the type name so that inspecting the class isn't necessary each time
-      @type = self.class.name.split('::').last.downcase.to_sym
-
+      @type = get_type
       @enabled = false
     end
 
-    # select the first device of type <em>type</em>
-    def self.first(type)
-      all_by_type[type].first
+    # Select the first device of the given direction
+    def self.first(direction)
+      all_by_type[direction].first
     end
 
-    # select the last device of type <em>type</em>
-    def self.last(type)
-      all_by_type[type].last
+    # Select the last device of the given direction
+    def self.last(direction)
+      all_by_type[direction].last
     end
 
-    # a Hash of :input and :output devices
+    # A hash of :input and :output devices
     def self.all_by_type
-      available_devices = { :input => [], :output => [] }
+      available_devices = { 
+        :input => [], 
+        :output => [] 
+      }
       count = -1
       MidiSystem.get_midi_device_info.each do |info|
         device = MidiSystem.get_midi_device(info)
-        opts = { :name => info.get_name, 
-                 :description => info.get_description, 
-                 :vendor => info.get_vendor }
-        available_devices[:output] << Output.new(count += 1, device, opts) unless device.get_max_receivers.zero?
-        available_devices[:input] << Input.new(count += 1, device, opts) unless device.get_max_transmitters.zero?
+        options = { 
+          :name => info.get_name, 
+          :description => info.get_description, 
+          :vendor => info.get_vendor 
+        }
+        unless device.get_max_receivers.zero?
+          available_devices[:output] << Output.new(count += 1, device, options) 
+        end
+        unless device.get_max_transmitters.zero?
+          available_devices[:input] << Input.new(count += 1, device, options) 
+        end
       end
       available_devices
     end
 
-    # all devices of both types
+    # All devices of both directions
     def self.all
       all_by_type.values.flatten
+    end
+
+    private
+
+    def get_type
+      self.class.name.split('::').last.downcase.to_sym
     end
 
   end
