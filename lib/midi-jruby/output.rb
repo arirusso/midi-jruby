@@ -16,12 +16,8 @@ module MIDIJRuby
     # @param [String] data A MIDI message expressed as a string of hex digits 
     # @return [Boolean]
     def puts_s(data)
-      data = data.dup
-      output = []
-      until (string = data.slice!(0,2)) == ""
-        output << string.hex
-      end
-      puts_bytes(*output)
+      bytes = hex_string_to_numeric_bytes(data)
+      puts_bytes(*bytes)
     end
     alias_method :puts_bytestr, :puts_s
     alias_method :puts_hex, :puts_s
@@ -82,6 +78,21 @@ module MIDIJRuby
     def self.all
       Device.all_by_type[:output]
     end
+
+    private
+
+    # Convert a hex string to numeric bytes (eg "904040" -> [0x90, 0x40, 0x40])
+    # @param [String] string
+    # @return [Array<Fixnum>]
+    def hex_string_to_numeric_bytes(string)
+      string = string.dup
+      bytes = []
+      until (string_byte = string.slice!(0,2)) == ""
+        bytes << string_byte.hex
+      end
+      bytes
+    end
+
   end
   
 end
