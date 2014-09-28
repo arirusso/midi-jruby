@@ -3,8 +3,6 @@ module MIDIJRuby
   # Input device class
   class Input
     
-    import javax.sound.midi.Transmitter
-
     include Device
     
     attr_reader :buffer
@@ -45,9 +43,7 @@ module MIDIJRuby
 
     # Enable this the input for use; can be passed a block
     def enable(options = {}, &block)
-      @device.open
-      @transmitter = @device.get_transmitter
-      @transmitter.set_receiver(InputReceiver.new)
+      API.enable_input(@device)
       initialize_buffer
       @start_time = Time.now.to_f
       initialize_listener
@@ -68,8 +64,7 @@ module MIDIJRuby
     # Close this input
     def close
       @listener.kill
-      @transmitter.close
-      @device.close
+      API.close_input(@device)
       @enabled = false
     end
     
@@ -125,7 +120,7 @@ module MIDIJRuby
       @listener = Thread.new do
         begin
           loop do        
-            while (messages = poll_system_buffer).empty?
+            while (messages = API.read_input(@device)).empty?
               sleep(1.0/1000)
             end
             populate_local_buffer(messages) unless messages.empty?
@@ -137,11 +132,7 @@ module MIDIJRuby
       @listener.abort_on_exception = true
       @listener
     end
-    
-    def poll_system_buffer
-      @transmitter.get_receiver.read
-    end
-    
+        
     def populate_local_buffer(messages)
       @buffer += messages.compact.map do |raw| 
         get_message_formatted(raw, now)
@@ -156,49 +147,6 @@ module MIDIJRuby
       end
       string_bytes.join
     end 
-
-    class InputReceiver
-      
-      include javax.sound.midi.Receiver
-      extend Forwardable
-    
-      attr_reader :stream
-
-      def initialize
-        @buffer = []
-      end
-      
-      def read
-        to_return = @buffer.dup
-        @buffer.clear
-        to_return
-      end
-      
-      def send(message, timestamp = -1)
-        bytes = if message.respond_to?(:get_packed_message)
-          packed = message.get_packed_message
-          unpack(packed)
-        else
-          string = String.from_java_bytes(message.get_message)
-          string.unpack("C" * string.length)
-        end
-        @buffer << bytes
-      end      
-      
-      private
-      
-      def unpack(message)
-        bytes = []
-        string = message.to_s(16)
-        string = "0#{s}" if string.length.divmod(2).last > 0
-        while string.length > 0
-          string_byte = string.slice!(0,2)
-          bytes << string_byte.hex
-        end
-        bytes.reverse        
-      end
-     
-    end
    
   end
 

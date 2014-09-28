@@ -3,11 +3,6 @@ module MIDIJRuby
   # Common methods used by both input and output devices
   module Device
     
-    import javax.sound.midi.MidiSystem
-    import javax.sound.midi.MidiDevice
-    import javax.sound.midi.MidiEvent
-    import javax.sound.midi.Receiver
-
     attr_reader :enabled, # has the device been initialized?
                 :id, # unique int id
                 :name, # name property from javax.sound.midi.MidiDevice.Info
@@ -40,26 +35,10 @@ module MIDIJRuby
 
     # A hash of :input and :output devices
     def self.all_by_type
-      available_devices = { 
-        :input => [], 
-        :output => [] 
+      @devices ||= { 
+        :input => API.get_inputs, 
+        :output => API.get_outputs
       }
-      count = -1
-      MidiSystem.get_midi_device_info.each do |info|
-        device = MidiSystem.get_midi_device(info)
-        options = { 
-          :name => info.get_name, 
-          :description => info.get_description, 
-          :vendor => info.get_vendor 
-        }
-        unless device.get_max_receivers.zero?
-          available_devices[:output] << Output.new(count += 1, device, options) 
-        end
-        unless device.get_max_transmitters.zero?
-          available_devices[:input] << Input.new(count += 1, device, options) 
-        end
-      end
-      available_devices
     end
 
     # All devices of both directions

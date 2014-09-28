@@ -2,15 +2,12 @@ module MIDIJRuby
   
   # Output device class
   class Output
-
-    import javax.sound.midi.ShortMessage
-    import javax.sound.midi.SysexMessage
     
     include Device
     
     # Close this output
     def close
-      @device.close
+      API.close_output(@device)
       @enabled = false
     end
     
@@ -30,11 +27,7 @@ module MIDIJRuby
     # Output the given MIDI message
     # @param [*Fixnum] data A MIDI messages expressed as Numeric bytes 
     def puts_bytes(*data)
-      bytes = Java::byte[data.size].new
-      data.each_with_index { |byte, i| bytes.ubyte_set(i, byte) }
-      message = data.first.eql?(0xF0) ? SysexMessage.new : ShortMessage.new
-      message.set_message(bytes, data.length.to_java(:int))
-      @device.get_receiver.send(message, 0)
+      API.write_output(@device, data)
     end
     
     # Output the given MIDI message
@@ -50,7 +43,7 @@ module MIDIJRuby
     
     # Enable this device; also takes a block
     def enable(options = {}, &block)
-      @device.open
+      API.enable_output(@device)
       @enabled = true
       if block_given?
         begin

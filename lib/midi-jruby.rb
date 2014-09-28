@@ -9,6 +9,7 @@ require "java"
 require "forwardable" 
 
 # modules
+require "midi-jruby/api"
 require "midi-jruby/device"
 
 # classes
