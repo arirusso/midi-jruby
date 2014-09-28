@@ -1,43 +1,41 @@
-require 'helper'
+require "helper"
 
-class InputBufferTest < Test::Unit::TestCase
+class MIDIJRuby::InputBufferTest < Test::Unit::TestCase
 
-  include MIDIJRuby
-  include TestHelper
-  include TestHelper::Config # before running these tests, adjust the constants in config.rb to suit your hardware setup
-  # ** this test assumes that TestOutput is connected to TestInput
-  
-  def test_input_buffer
-    sleep(1)
+  context "MIDIJRuby" do
 
-    messages = VariousMIDIMessages
-    bytes = []
-
-    TestOutput.open do |output|
-      TestInput.open do |input|
-
-        messages.each do |msg|
-
-          $>.puts "sending: " + msg.inspect
-
-          output.puts(msg)
-          
-          bytes += msg 
-          
-          sleep(1)
-          
-          buffer = input.buffer.map { |m| m[:data] }.flatten
-
-          $>.puts "received: " + buffer.to_s
-          
-          assert_equal(bytes, buffer)
-
-        end
-        
-        assert_equal(input.buffer.length, messages.length)
-
-      end
+    setup do
+      @output = $test_device[:output].open
+      @input = $test_device[:input].open
+      @input.buffer.clear
     end
-  end
 
+    context "Source#buffer" do
+
+      setup do
+        @messages = TestHelper.numeric_messages
+        @messages_arr = @messages.inject(&:+).flatten
+        @received_arr = []
+        @pointer = 0
+      end
+
+      should "have the correct messages in the buffer" do
+        bytes = []
+        @messages.each do |message|
+          puts "sending: #{message.inspect}"
+          @output.puts(message)
+          bytes += message
+
+          sleep(1)
+
+          buffer = @input.buffer.map { |m| m[:data] }.flatten
+          puts "received: #{buffer.to_s}"
+          assert_equal(bytes, buffer)
+        end
+        assert_equal(bytes.length, @input.buffer.map { |m| m[:data] }.flatten.length)
+      end
+
+    end
+
+  end
 end
