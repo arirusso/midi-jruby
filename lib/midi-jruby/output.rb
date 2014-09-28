@@ -30,14 +30,11 @@ module MIDIJRuby
     # Output the given MIDI message
     # @param [*Fixnum] data A MIDI messages expressed as Numeric bytes 
     def puts_bytes(*data)
-      if data.first.eql?(0xF0)
-        msg = SysexMessage.new
-        msg.set_message(data.to_java(:byte), data.length)
-      else
-        msg = ShortMessage.new
-        msg.set_message(*data)
-      end
-      @device.get_receiver.send(msg, 0)
+      bytes = Java::byte[data.size].new
+      data.each_with_index { |byte, i| bytes.ubyte_set(i, byte) }
+      message = data.first.eql?(0xF0) ? SysexMessage.new : ShortMessage.new
+      message.set_message(bytes, data.length.to_java(:int))
+      @device.get_receiver.send(message, 0)
     end
     
     # Output the given MIDI message
