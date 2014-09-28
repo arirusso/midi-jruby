@@ -5,10 +5,15 @@ class MIDIJRuby::InputBufferTest < Test::Unit::TestCase
   context "MIDIJRuby" do
 
     setup do
-      @output = TestHelper.output.open
       @input = TestHelper.input.open
+      @output = TestHelper.output.open
       @input.buffer.clear
       @pointer = 0
+    end
+
+    teardown do
+      @input.close
+      @output.close
     end
 
     context "Source#buffer" do

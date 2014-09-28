@@ -6,11 +6,15 @@ class MIDIJRuby::IOTest < Test::Unit::TestCase
   context "MIDIJRuby" do
 
     setup do
-      sleep(1)
       @input = TestHelper.input.open
       @output = TestHelper.output.open
       @input.buffer.clear
       @pointer = 0
+    end
+
+    teardown do
+      @input.close
+      @output.close
     end
 
     context "full IO" do

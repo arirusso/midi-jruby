@@ -67,6 +67,8 @@ module MIDIJRuby
     # @param [Java::ComSunMediaSound::MidiOutDevice] device
     # @return [Boolean]
     def close_output(device)
+      @receiver[device].close
+      @receiver.delete(device)
       device.close
       true
     end
@@ -75,8 +77,10 @@ module MIDIJRuby
     # @param [Java::ComSunMediaSound::MidiInDevice] device
     # @return [Boolean]
     def close_input(device)
-      @transmitter[device].close
-      device.close
+      # http://bugs.java.com/bugdatabase/view_bug.do?bug_id=4914667
+      # @transmitter[device].close
+      # device.close
+      @transmitter.delete(device)
       true
     end
 
@@ -141,7 +145,10 @@ module MIDIJRuby
           string.unpack("C" * string.length)
         end
         @buffer << bytes
-      end      
+      end
+
+      def close
+      end
       
       private
       
