@@ -18,6 +18,7 @@ module MIDIJRuby
     # The data is an array of numeric bytes
     # The timestamp is the number of millis since this input was enabled
     #
+    # @return [Array<Hash>]
     def gets
       loop until queued_messages?
       messages = queued_messages
@@ -33,20 +34,21 @@ module MIDIJRuby
     #   { :data => "90447F", :timestamp => 1300 }
     # ]
     #
+    # @return [Array<Hash>]
     def gets_s
       messages = gets
       messages.each { |message| message[:data] = numeric_bytes_to_hex_string(message[:data]) }
-      messages  
+      messages
     end
     alias_method :gets_bytestr, :gets_s
     alias_method :gets_hex, :gets_s
 
     # Enable this the input for use; can be passed a block
+    # @param [Hash] options
+    # @param [Proc] block
+    # @return [Input] self
     def enable(options = {}, &block)
-      API.enable_input(@device)
-      initialize_buffer
-      @start_time = Time.now.to_f
-      initialize_listener
+      initialize_input
       @enabled = true
       if block_given?
         begin
@@ -62,6 +64,7 @@ module MIDIJRuby
     alias_method :start, :enable
 
     # Close this input
+    # @return [Boolean]
     def close
       @listener.kill
       API.close_input(@device)
@@ -69,22 +72,37 @@ module MIDIJRuby
     end
     
     # Select the first input
+    # @return [Input]
     def self.first
       Device.first(:input)  
     end
 
     # Select the last input
+    # @return [Input]
     def self.last
       Device.last(:input) 
     end
     
     # All inputs
+    # @return [Array<Input>]
     def self.all
       Device.all_by_type[:input]
     end
     
     private
+
+    # Initialize the input components
+    # @return [Boolean]
+    def initialize_input
+      initialize_buffer
+      API.enable_input(@device)
+      @start_time = Time.now.to_f
+      initialize_listener
+      true
+    end
     
+    # Initialize the input buffer
+    # @return [Boolean]
     def initialize_buffer
       @buffer = []
       @pointer = 0
@@ -94,28 +112,38 @@ module MIDIJRuby
       end
     end
     
+    # Get a timestamp for the current time
+    # @return [Fixnum]
     def now
       now = Time.now.to_f - @start_time
       now * 1000
     end
     
-    # give a message its timestamp and package it in a Hash
-    def get_message_formatted(raw, time) 
+    # A hash of a MIDI message and corresponding timestamp
+    # @param [Array<Fixnum>] message
+    # @param [Fixnum] timestamp
+    # @return [Hash]
+    def get_message_formatted(message, timestamp) 
       { 
-        :data => raw, 
-        :timestamp => time 
+        :data => message, 
+        :timestamp => timestamp
       }
     end
     
+    # Messages in the buffer
+    # @return [Array<Array<Fixnum>>]
     def queued_messages
       @buffer.slice(@pointer, @buffer.length - @pointer)
     end
     
+    # Are there any new messages in the buffer?
+    # @return [Boolean]
     def queued_messages?
       @pointer < @buffer.length
     end
     
     # Launch a background thread that collects messages
+    # @return [Thread]
     def initialize_listener
       @listener = Thread.new do
         begin
@@ -123,7 +151,7 @@ module MIDIJRuby
             while (messages = API.read_input(@device)).empty?
               sleep(1.0/1000)
             end
-            populate_local_buffer(messages) unless messages.empty?
+            add_to_buffer(messages) unless messages.empty?
           end
         rescue Exception => exception
           Thread.main.raise(exception)
@@ -133,12 +161,17 @@ module MIDIJRuby
       @listener
     end
         
-    def populate_local_buffer(messages)
-      @buffer += messages.compact.map do |raw| 
-        get_message_formatted(raw, now)
+    # @param [Array<Array<Fixnum>>]
+    # @return [Array<Array<Fixnum>>]
+    def add_to_buffer(messages)
+      @buffer += messages.compact.map do |message| 
+        get_message_formatted(message, now)
       end
     end
 
+    # Convert an array of numeric bytes to a hex string (eg [0x90, 0x40, 0x40] -> "904040")
+    # @param [Array<Fixnum>] bytes
+    # @return [String]
     def numeric_bytes_to_hex_string(bytes)
       string_bytes = bytes.map do |byte| 
         string = byte.to_s(16).upcase
