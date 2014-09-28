@@ -6,6 +6,7 @@ module MIDIJRuby
     include Device
     
     # Close this output
+    # @return [Boolean]
     def close
       API.close_output(@device)
       @enabled = false
@@ -13,6 +14,7 @@ module MIDIJRuby
     
     # Output the given MIDI message
     # @param [String] data A MIDI message expressed as a string of hex digits 
+    # @return [Boolean]
     def puts_s(data)
       data = data.dup
       output = []
@@ -26,12 +28,14 @@ module MIDIJRuby
 
     # Output the given MIDI message
     # @param [*Fixnum] data A MIDI messages expressed as Numeric bytes 
+    # @return [Boolean]
     def puts_bytes(*data)
       API.write_output(@device, data)
     end
     
     # Output the given MIDI message
     # @param [*Fixnum, *String] args 
+    # @return [Boolean]
     def puts(*args)
       case args.first
         when Array then puts_bytes(*args.first)
@@ -42,6 +46,9 @@ module MIDIJRuby
     alias_method :write, :puts
     
     # Enable this device; also takes a block
+    # @param [Hash] options
+    # @param [Proc] block
+    # @return [Output]
     def enable(options = {}, &block)
       API.enable_output(@device)
       @enabled = true
@@ -59,16 +66,19 @@ module MIDIJRuby
     alias_method :start, :enable
     
     # Select the first output
+    # @return [Output]
     def self.first
       Device.first(:output) 
     end
 
     # Select the last output
+    # @return [Output]
     def self.last
       Device.last(:output)  
     end
     
     # All outputs
+    # @return [Array<Output>]
     def self.all
       Device.all_by_type[:output]
     end
