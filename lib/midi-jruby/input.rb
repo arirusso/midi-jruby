@@ -175,7 +175,7 @@ module MIDIJRuby
     def numeric_bytes_to_hex_string(bytes)
       string_bytes = bytes.map do |byte| 
         string = byte.to_s(16).upcase
-        string = "0#{string}" if byte < 16
+        string = "0#{string}" if byte < 0x10
         string
       end
       string_bytes.join
