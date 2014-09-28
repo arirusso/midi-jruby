@@ -12,7 +12,13 @@ module MIDIJRuby
 
     alias_method :enabled?, :enabled
     
-    def initialize(id, device, options = {}, &block)
+    # @param [Fixnum] The uuid for the given device
+    # @param [Java::ComSunMediaSound::MidiInDevice, Java::ComSunMediaSound::MidiOutDevice] device The underlying Java device object
+    # @param [Hash] options
+    # @option options [String] :description
+    # @option options [String] :name
+    # @option options [String] :vendor
+    def initialize(id, device, options = {})
       @name = options[:name]
       @description = options[:description]
       @vendor = options[:vendor]
@@ -24,16 +30,21 @@ module MIDIJRuby
     end
 
     # Select the first device of the given direction
+    # @param [Symbol] direction
+    # @return [Input, Output]
     def self.first(direction)
       all_by_type[direction].first
     end
 
     # Select the last device of the given direction
+    # @param [Symbol] direction
+    # @return [Input, Output]
     def self.last(direction)
       all_by_type[direction].last
     end
 
     # A hash of :input and :output devices
+    # @return [Hash]
     def self.all_by_type
       @devices ||= { 
         :input => API.get_inputs, 
@@ -42,12 +53,14 @@ module MIDIJRuby
     end
 
     # All devices of both directions
+    # @return [Array<Input, Output>]
     def self.all
       all_by_type.values.flatten
     end
 
     private
 
+    # @return [String]
     def get_type
       self.class.name.split('::').last.downcase.to_sym
     end
