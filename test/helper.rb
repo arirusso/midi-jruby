@@ -49,9 +49,12 @@ module TestHelper
     messages
   end
 
-end
+  def input
+    MIDIJRuby::Input.first
+  end
 
-$test_device = {
-  :input => MIDIJRuby::Input.first, # this is the device you wish to use to test input
-  :output => MIDIJRuby::Output.first # likewise for output
-}
+  def output
+    MIDIJRuby::Output.first 
+  end
+
+end

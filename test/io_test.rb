@@ -7,8 +7,8 @@ class MIDIJRuby::IOTest < Test::Unit::TestCase
 
     setup do
       sleep(1)
-      @output = $test_device[:output].open
-      @input = $test_device[:input].open
+      @input = TestHelper.input.open
+      @output = TestHelper.output.open
       @input.buffer.clear
       @pointer = 0
     end
@@ -26,13 +26,13 @@ class MIDIJRuby::IOTest < Test::Unit::TestCase
         should "do IO" do
           @messages.each do |message|
 
-            $>.puts "sending: " + message.inspect
+            p "sending: #{message}"
 
             @output.puts(message)
             sleep(1)
             received = @input.gets.map { |m| m[:data] }.flatten
 
-            $>.puts "received: " + received.inspect
+            p "received: #{received}"
 
             assert_equal(@messages_arr.slice(@pointer, received.length), received)
             @pointer += received.length
