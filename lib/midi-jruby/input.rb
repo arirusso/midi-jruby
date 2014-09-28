@@ -134,6 +134,8 @@ module MIDIJRuby
           Thread.main.raise(exception)
         end
       end
+      @listener.abort_on_exception = true
+      @listener
     end
     
     def poll_system_buffer
@@ -149,7 +151,7 @@ module MIDIJRuby
     def numeric_bytes_to_hex_string(bytes)
       string_bytes = bytes.map do |byte| 
         string = byte.to_s(16).upcase
-        string = "0#{string}" if b < 16
+        string = "0#{string}" if byte < 16
         string
       end
       string_bytes.join
@@ -163,25 +165,24 @@ module MIDIJRuby
       attr_reader :stream
 
       def initialize
-        @buf = []
+        @buffer = []
       end
       
       def read
-        to_return = @buf.dup
-        @buf.clear
+        to_return = @buffer.dup
+        @buffer.clear
         to_return
       end
       
       def send(message, timestamp = -1)
-        if message.respond_to?(:get_packed_message)
+        bytes = if message.respond_to?(:get_packed_message)
           packed = message.get_packed_message
-          @buf << unpack(packed)
+          unpack(packed)
         else
-          string = String.from_java_bytes(message.get_data)
-          arr = str.unpack("C" * string.length)
-          arr.insert(0, message.get_status)
-          @buf << arr 
+          string = String.from_java_bytes(message.get_message)
+          string.unpack("C" * string.length)
         end
+        @buffer << bytes
       end      
       
       private
