@@ -13,8 +13,10 @@ module MIDIJRuby
 
     extend self
 
+    # Get all MIDI devices that are available via javax.sound.midi
+    # @return [Array<Hash>] A set of hashes for each available device
     def get_devices
-      devices = MidiSystem.get_midi_device_info.map do |info|
+      MidiSystem.get_midi_device_info.map do |info|
         jdevice = MidiSystem.get_midi_device(info)
         { 
           :device => jdevice,
@@ -24,60 +26,90 @@ module MIDIJRuby
           :vendor => info.get_vendor 
         }
       end
-      devices
     end
 
+    # Get all MIDI inputs that are available via javax.sound.midi
+    # @return [Array<Input>]
     def get_inputs
       jinputs = get_devices.select { |device| !device[:device].get_max_transmitters.zero? }
       jinputs.map { |jinput| Input.new(jinput[:id], jinput[:device], jinput) }
     end
 
+    # Get all MIDI outputs that are available via javax.sound.midi
+    # @return [Array<Output>]
     def get_outputs
       joutputs = get_devices.select { |device| !device[:device].get_max_receivers.zero? }
       joutputs.map { |joutput| Output.new(joutput[:id], joutput[:device], joutput) } 
     end
 
+    # Enable the given input device to receive MIDI messages
+    # @param [Java::ComSunMediaSound::MidiInDevice] device
+    # @return [Boolean]
     def enable_input(device)
       device.open
       @transmitter ||= {}
       @transmitter[device] = device.get_transmitter
       @transmitter[device].set_receiver(InputReceiver.new)
+      true
     end
 
+    # Enable the given output to emit MIDI messages
+    # @param [Java::ComSunMediaSound::MidiOutDevice] device
+    # @return [Boolean]
     def enable_output(device)
       @receiver ||= {}
       @receiver[device] = device.get_receiver
       device.open
+      true
     end
 
+    # Close the given output device
+    # @param [Java::ComSunMediaSound::MidiOutDevice] device
+    # @return [Boolean]
     def close_output(device)
       device.close
+      true
     end
 
+    # Close the given input device
+    # @param [Java::ComSunMediaSound::MidiInDevice] device
+    # @return [Boolean]
     def close_input(device)
       @transmitter[device].close
       device.close
+      true
     end
 
+    # Read any new MIDI messages from the given input device
+    # @param [Java::ComSunMediaSound::MidiInDevice] device
+    # @return [Array<Array<Fixnum>>]
     def read_input(device)
       @transmitter[device].get_receiver.read
     end
 
+    # Write the given MIDI message to the given output device
+    # @param [Java::ComSunMediaSound::MidiOutDevice] device
+    # @param [Array<Fixnum>] data
+    # @return [Boolean]
     def write_output(device, data)
       bytes = Java::byte[data.size].new
       data.each_with_index { |byte, i| bytes.ubyte_set(i, byte) }
       message = data.first.eql?(0xF0) ? SysexMessage.new : ShortMessage.new
       message.set_message(bytes, data.length.to_java(:int))
       @receiver[device].send(message, 0)
+      true
     end
 
     private
 
+    # Generate a uuid for a MIDI device
+    # @return [Fixnum]
     def get_uuid
       @id ||= -1
       @id += 1
     end
 
+    # Input event handler class
     class InputReceiver
       
       include javax.sound.midi.Receiver
@@ -88,12 +120,18 @@ module MIDIJRuby
         @buffer = []
       end
       
+      # Pluck messages from the buffer
+      # @return [Array<Array<Fixnum>>]
       def read
-        to_return = @buffer.dup
+        messages = @buffer.dup
         @buffer.clear
-        to_return
+        messages
       end
       
+      # Add a new message to the buffer
+      # @param [Array<Fixnum>] message
+      # @param [Fixnum] timestamp
+      # @return [Array<Array<Fixnum>>]
       def send(message, timestamp = -1)
         bytes = if message.respond_to?(:get_packed_message)
           packed = message.get_packed_message
@@ -107,6 +145,8 @@ module MIDIJRuby
       
       private
       
+      # @param [String]
+      # @return [Array<Fixnum>]
       def unpack(message)
         bytes = []
         string = message.to_s(16)
