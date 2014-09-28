@@ -50,7 +50,7 @@ module MIDIJRuby
       @transmitter.set_receiver(InputReceiver.new)
       initialize_buffer
       @start_time = Time.now.to_f
-      spawn_listener
+      initialize_listener
       @enabled = true
       if block_given?
         begin
@@ -121,7 +121,7 @@ module MIDIJRuby
     end
     
     # Launch a background thread that collects messages
-    def spawn_listener
+    def initialize_listener
       @listener = Thread.new do
         begin
           loop do        
