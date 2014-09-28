@@ -8,6 +8,7 @@ class MIDIJRuby::InputBufferTest < Test::Unit::TestCase
       @output = $test_device[:output].open
       @input = $test_device[:input].open
       @input.buffer.clear
+      @pointer = 0
     end
 
     context "Source#buffer" do
@@ -16,7 +17,6 @@ class MIDIJRuby::InputBufferTest < Test::Unit::TestCase
         @messages = TestHelper.numeric_messages
         @messages_arr = @messages.inject(&:+).flatten
         @received_arr = []
-        @pointer = 0
       end
 
       should "have the correct messages in the buffer" do

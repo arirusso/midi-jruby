@@ -2,13 +2,15 @@ require "helper"
 
 class MIDIJRuby::IOTest < Test::Unit::TestCase
 
-  # ** these tests assume that TestOutput is connected to TestInput
+  # These tests assume that TestOutput is connected to TestInput
   context "MIDIJRuby" do
 
     setup do
+      sleep(1)
       @output = $test_device[:output].open
       @input = $test_device[:input].open
       @input.buffer.clear
+      @pointer = 0
     end
 
     context "full IO" do
@@ -19,15 +21,14 @@ class MIDIJRuby::IOTest < Test::Unit::TestCase
           @messages = TestHelper.numeric_messages
           @messages_arr = @messages.inject(&:+).flatten
           @received_arr = []
-          @pointer = 0
         end
 
         should "do IO" do
-          @messages.each do |msg|
+          @messages.each do |message|
 
-            $>.puts "sending: " + msg.inspect
+            $>.puts "sending: " + message.inspect
 
-            @output.puts(msg)
+            @output.puts(message)
             sleep(1)
             received = @input.gets.map { |m| m[:data] }.flatten
 
@@ -47,25 +48,23 @@ class MIDIJRuby::IOTest < Test::Unit::TestCase
           @messages = TestHelper.string_messages
           @messages_str = @messages.join
           @received_str = ""
-          @pointer = 0
         end
 
         should "do IO" do
-          @messages.each do |msg|
+          @messages.each do |message|
 
-            $>.puts "sending: " + msg.inspect
+            p "sending: #{message}"
 
-            @output.puts(msg)
+            @output.puts(message)
             sleep(1)
             received = @input.gets_bytestr.map { |m| m[:data] }.flatten.join
-            $>.puts "received: " + received.inspect
+            p "received: #{received}"
 
             assert_equal(@messages_str.slice(@pointer, received.length), received)
             @pointer += received.length
             @received_str += received
           end
           assert_equal(@messages_str, @received_str)
-
         end
 
       end
