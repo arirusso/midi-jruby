@@ -34,7 +34,7 @@ module MIDIJRuby
     # @return [Boolean]
     def puts(*args)
       case args.first
-        when Array then puts_bytes(*args.first)
+        when Array then args.each { |arg| puts(*arg) }
         when Numeric then puts_bytes(*args)
         when String then puts_bytestr(*args)
       end
