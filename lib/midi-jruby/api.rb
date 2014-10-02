@@ -156,8 +156,7 @@ module MIDIJRuby
       # @return [Array<Fixnum>]
       def unpack(message)
         bytes = []
-        string = message.to_s(16)
-        string = "0#{s}" if string.length.divmod(2).last > 0
+        string = msg.to_s(16).rjust(6,"0")
         while string.length > 0
           string_byte = string.slice!(0,2)
           bytes << string_byte.hex
