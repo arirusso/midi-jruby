@@ -48,8 +48,10 @@ module MIDIJRuby
     # @param [Proc] block
     # @return [Input] self
     def enable(options = {}, &block)
-      initialize_input
-      @enabled = true
+      unless @enabled
+        initialize_input
+        @enabled = true
+      end
       if block_given?
         begin
           yield(self)

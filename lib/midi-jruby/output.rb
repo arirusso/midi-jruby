@@ -46,8 +46,10 @@ module MIDIJRuby
     # @param [Proc] block
     # @return [Output]
     def enable(options = {}, &block)
-      API.enable_output(@device)
-      @enabled = true
+      unless @enabled
+        API.enable_output(@device)
+        @enabled = true
+      end
       if block_given?
         begin
           yield(self)

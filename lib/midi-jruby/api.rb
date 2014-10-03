@@ -67,8 +67,10 @@ module MIDIJRuby
     # @param [Java::ComSunMediaSound::MidiOutDevice] device
     # @return [Boolean]
     def close_output(device)
-      @receiver[device].close
-      @receiver.delete(device)
+      unless @receiver[device].nil?
+        @receiver[device].close
+        @receiver.delete(device)
+      end
       device.close
       true
     end
