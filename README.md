@@ -28,7 +28,7 @@ Otherwise
 
 ## Issues
 
-There is [an issue](http://stackoverflow.com/questions/8148898/java-midi-in-mac-osx-broken) that causes javax.sound.midi not to be able to send SysEx messages in some versions.
+There is [an issue](http://stackoverflow.com/questions/8148898/java-midi-in-mac-osx-broken) that causes javax.sound.midi not to be able to send SysEx messages in some versions of OSX.
 
 ## Documentation
 
