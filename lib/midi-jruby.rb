@@ -6,7 +6,7 @@
 
 # libs
 require "java"
-require "forwardable" 
+require "forwardable"
 
 # modules
 require "midi-jruby/api"
@@ -17,7 +17,7 @@ require "midi-jruby/input"
 require "midi-jruby/output"
 
 module MIDIJRuby
-  
-  VERSION = "0.1.4"
-       
+
+  VERSION = "0.1.5"
+
 end
