@@ -1,7 +1,7 @@
 dir = File.dirname(File.expand_path(__FILE__))
 $LOAD_PATH.unshift dir + "/../lib"
 
-require "test/unit"
+require "minitest/autorun"
 require "mocha/test_unit"
 require "shoulda-context"
 require "midi-jruby"
@@ -21,7 +21,7 @@ module TestHelper
     until (bytestr = data.slice!(0,2)).eql?("")
       output << bytestr.hex
     end
-    output    	
+    output
   end
 
   def numeric_messages
@@ -54,7 +54,7 @@ module TestHelper
   end
 
   def output
-    MIDIJRuby::Output.first 
+    MIDIJRuby::Output.first
   end
 
 end

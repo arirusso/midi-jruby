@@ -1,6 +1,6 @@
 require "helper"
 
-class MIDIJRuby::InputBufferTest < Test::Unit::TestCase
+class MIDIJRuby::InputBufferTest < Minitest::Test
 
   context "MIDIJRuby" do
 

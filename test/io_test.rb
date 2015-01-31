@@ -1,6 +1,6 @@
 require "helper"
 
-class MIDIJRuby::IOTest < Test::Unit::TestCase
+class MIDIJRuby::IOTest < Minitest::Test
 
   # These tests assume that TestOutput is connected to TestInput
   context "MIDIJRuby" do
