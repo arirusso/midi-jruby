@@ -1,5 +1,4 @@
-dir = File.dirname(File.expand_path(__FILE__))
-$LOAD_PATH.unshift dir + "/../lib"
+$:.unshift(File.join("..", "lib"))
 
 require "minitest/autorun"
 require "mocha/test_unit"
@@ -54,7 +53,7 @@ module TestHelper
   end
 
   def output
-    MIDIJRuby::Output.first
+    MIDIJRuby::Output.all[1]
   end
 
 end
