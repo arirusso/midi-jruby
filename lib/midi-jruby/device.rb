@@ -2,16 +2,16 @@ module MIDIJRuby
 
   # Common methods used by both input and output devices
   module Device
-    
+
     attr_reader :enabled, # has the device been initialized?
                 :id, # unique int id
                 :name, # name property from javax.sound.midi.MidiDevice.Info
                 :description, # description property from javax.sound.midi.MidiDevice.Info
                 :vendor, # vendor property from javax.sound.midi.MidiDevice.Info
-                :type # :input or :output 
+                :type # :input or :output
 
     alias_method :enabled?, :enabled
-    
+
     # @param [Fixnum] The uuid for the given device
     # @param [Java::ComSunMediaSound::MidiInDevice, Java::ComSunMediaSound::MidiOutDevice] device The underlying Java device object
     # @param [Hash] options
@@ -46,8 +46,8 @@ module MIDIJRuby
     # A hash of :input and :output devices
     # @return [Hash]
     def self.all_by_type
-      @devices ||= { 
-        :input => API.get_inputs, 
+      @devices ||= {
+        :input => API.get_inputs,
         :output => API.get_outputs
       }
     end
@@ -62,7 +62,7 @@ module MIDIJRuby
 
     # @return [String]
     def get_type
-      self.class.name.split('::').last.downcase.to_sym
+      self.class.name.split("::").last.downcase.to_sym
     end
 
   end
