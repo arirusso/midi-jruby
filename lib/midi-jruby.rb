@@ -1,8 +1,11 @@
+#
+# MIDI-JRuby
 # Realtime MIDI IO in JRuby using the javax.sound.midi API
 #
-# Ari Russo
-# (c) 2011-2014
+# (c) 2011-2017 Ari Russo
 # Licensed under Apache 2.0
+# https://github.com/arirusso/midi-jruby
+#
 
 # libs
 require "java"

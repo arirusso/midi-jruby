@@ -20,7 +20,7 @@ If you're using Bundler, add this line to your application's Gemfile:
 Otherwise
 
 `gem install midi-jruby`
-	
+
 ## Examples
 
 * [Input](http://github.com/arirusso/midi-jruby/blob/master/examples/input.rb)
@@ -34,12 +34,12 @@ There is [an issue](http://stackoverflow.com/questions/8148898/java-midi-in-mac-
 
 * [rdoc](http://rdoc.info/gems/midi-jruby)
 
-## Author 
+## Author
 
 [Ari Russo](http://github.com/arirusso) <ari.russo at gmail.com>
-		
+
 ## License
 
 Apache 2.0, See the file LICENSE
 
-Copyright (c) 2011-2014 Ari Russo
+Copyright (c) 2011-2017 Ari Russo
