@@ -34,12 +34,8 @@ There is [an issue](http://stackoverflow.com/questions/8148898/java-midi-in-mac-
 
 * [rdoc](http://rdoc.info/gems/midi-jruby)
 
-## Author
-
-[Ari Russo](http://github.com/arirusso) <ari.russo at gmail.com>
-
 ## License
 
 Apache 2.0, See the file LICENSE
 
-Copyright (c) 2011-2017 Ari Russo
+Copyright (c) 2011-2017 [Ari Russo](http://github.com/arirusso)
