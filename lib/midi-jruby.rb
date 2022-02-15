@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 #
 # MIDI-JRuby
 # Realtime MIDI IO in JRuby using the javax.sound.midi API
@@ -8,19 +10,17 @@
 #
 
 # libs
-require "java"
-require "forwardable"
+require 'java'
+require 'forwardable'
 
 # modules
-require "midi-jruby/api"
-require "midi-jruby/device"
+require 'midi-jruby/api'
+require 'midi-jruby/device'
 
 # classes
-require "midi-jruby/input"
-require "midi-jruby/output"
+require 'midi-jruby/input'
+require 'midi-jruby/output'
 
 module MIDIJRuby
-
-  VERSION = "0.1.6"
-
+  VERSION = '0.1.6'
 end

@@ -1,8 +1,8 @@
+# frozen_string_literal: true
+
 module MIDIJRuby
-    
   # Access to javax.sound.midi
   module API
-
     import javax.sound.midi.MidiSystem
     import javax.sound.midi.MidiDevice
     import javax.sound.midi.MidiEvent
@@ -13,17 +13,19 @@ module MIDIJRuby
 
     extend self
 
+    SYSEX_STATUS_BYTES = [0xF0, 0xF7]
+
     # Get all MIDI devices that are available via javax.sound.midi
     # @return [Array<Hash>] A set of hashes for each available device
     def get_devices
       MidiSystem.get_midi_device_info.map do |info|
         jdevice = MidiSystem.get_midi_device(info)
-        { 
-          :device => jdevice,
-          :id => get_uuid,
-          :name => info.get_name, 
-          :description => info.get_description, 
-          :vendor => info.get_vendor 
+        {
+          device: jdevice,
+          id: get_uuid,
+          name: info.get_name,
+          description: info.get_description,
+          vendor: info.get_vendor
         }
       end
     end
@@ -31,15 +33,15 @@ module MIDIJRuby
     # Get all MIDI inputs that are available via javax.sound.midi
     # @return [Array<Input>]
     def get_inputs
-      jinputs = get_devices.select { |device| !device[:device].get_max_transmitters.zero? }
+      jinputs = get_devices.reject { |device| device[:device].get_max_transmitters.zero? }
       jinputs.map { |jinput| Input.new(jinput[:id], jinput[:device], jinput) }
     end
 
     # Get all MIDI outputs that are available via javax.sound.midi
     # @return [Array<Output>]
     def get_outputs
-      joutputs = get_devices.select { |device| !device[:device].get_max_receivers.zero? }
-      joutputs.map { |joutput| Output.new(joutput[:id], joutput[:device], joutput) } 
+      joutputs = get_devices.reject { |device| device[:device].get_max_receivers.zero? }
+      joutputs.map { |joutput| Output.new(joutput[:id], joutput[:device], joutput) }
     end
 
     # Enable the given input device to receive MIDI messages
@@ -100,9 +102,12 @@ module MIDIJRuby
     def write_output(device, data)
       bytes = Java::byte[data.size].new
       data.each_with_index { |byte, i| bytes.ubyte_set(i, byte) }
-      message = data.first.eql?(0xF0) ? SysexMessage.new : ShortMessage.new
-      message.set_message(bytes, data.length.to_java(:int))
-      @receiver[device].send(message, 0)
+      message = if SYSEX_STATUS_BYTES.include?(data.first)
+                  SysexMessage.new(bytes, data.length.to_java(:int))
+                else
+                  ShortMessage.new(*bytes)
+                end
+      @receiver[device].send(message, device.get_microsecond_position)
       true
     end
 
@@ -117,15 +122,14 @@ module MIDIJRuby
 
     # Input event handler class
     class InputReceiver
-      
       include javax.sound.midi.Receiver
-    
+
       attr_reader :stream
 
       def initialize
         @buffer = []
       end
-      
+
       # Pluck messages from the buffer
       # @return [Array<Array<Fixnum>>]
       def read
@@ -133,43 +137,39 @@ module MIDIJRuby
         @buffer.clear
         messages
       end
-      
+
       # Add a new message to the buffer
-      # @param [Array<Fixnum>] message
+      # @param [javax.sound.midi.MidiMessage] message
       # @param [Fixnum] timestamp
       # @return [Array<Array<Fixnum>>]
-      def send(message, timestamp = -1)
+      def send(message, _timestamp = -1)
         bytes = if message.respond_to?(:get_packed_message)
-          packed = message.get_packed_message
-          unpack(packed)
-        else
-          string = String.from_java_bytes(message.get_message)
-          string.unpack("C" * string.length)
-        end
+                  packed = message.get_packed_message
+                  unpack(packed)
+                else
+                  string = String.from_java_bytes(message.get_message)
+                  string.unpack('C' * string.length)
+                end
         @buffer << bytes
       end
 
-      def close
-      end
-      
+      def close; end
+
       private
-      
+
       # @param [String]
       # @return [Array<Fixnum>]
       def unpack(message)
         bytes = []
         string = message.to_s(16)
-        string = "0#{s}" if string.length.divmod(2).last > 0
-        string = string.rjust(6,"0")
-        while string.length > 0
-          string_byte = string.slice!(0,2)
+        string = "0#{s}" if string.length.divmod(2).last.positive?
+        string = string.rjust(6, '0')
+        while string.length.positive?
+          string_byte = string.slice!(0, 2)
           bytes << string_byte.hex
         end
-        bytes.reverse        
+        bytes.reverse
       end
-     
     end
-
   end
-
 end

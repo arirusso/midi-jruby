@@ -1,6 +1,8 @@
-$:.unshift(File.join("..", "lib"))
+# frozen_string_literal: true
 
-require "midi-jruby"
-require "pp"
+$LOAD_PATH.unshift(File.join('..', 'lib'))
+
+require 'midi-jruby'
+require 'pp'
 
 pp MIDIJRuby::Device.all_by_type
