@@ -38,4 +38,4 @@ There is [an issue](http://stackoverflow.com/questions/8148898/java-midi-in-mac-
 
 Apache 2.0, See the file LICENSE
 
-Copyright (c) 2011-2017 [Ari Russo](http://github.com/arirusso)
+Copyright (c) 2011-2022 [Ari Russo](http://github.com/arirusso)
