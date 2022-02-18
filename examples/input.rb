@@ -1,6 +1,11 @@
-$:.unshift(File.join("..", "lib"))
+# frozen_string_literal: true
 
-require "midi-jruby"
+require 'English'
+require 'English'
+require 'English'
+$LOAD_PATH.unshift(File.join('..', 'lib'))
+
+require 'midi-jruby'
 
 # this program selects the first midi input and sends an inspection of the first 10 messages
 # messages it receives to standard out
@@ -11,14 +16,12 @@ num_messages = 10
 # or amidi -l from the command line
 
 MIDIJRuby::Input.first.open do |input|
-
-  $>.puts "send some MIDI to your input now..."
+  $DEFAULT_OUTPUT.puts 'send some MIDI to your input now...'
 
   num_messages.times do
     m = input.gets
-    $>.puts(m.inspect)
+    $DEFAULT_OUTPUT.puts(m.inspect)
   end
 
-  $>.puts "finished"
-
+  $DEFAULT_OUTPUT.puts 'finished'
 end
