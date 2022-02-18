@@ -13,7 +13,7 @@ module MIDIJRuby
 
     extend self
 
-    SYSEX_STATUS_BYTES = [0xF0, 0xF7]
+    SYSEX_STATUS_BYTES = [0xF0, 0xF7].freeze
 
     # Get all MIDI devices that are available via javax.sound.midi
     # @return [Array<Hash>] A set of hashes for each available device
@@ -102,11 +102,18 @@ module MIDIJRuby
     def write_output(device, data)
       bytes = Java::byte[data.size].new
       data.each_with_index { |byte, i| bytes.ubyte_set(i, byte) }
-      message = if SYSEX_STATUS_BYTES.include?(data.first)
-                  SysexMessage.new(bytes, data.length.to_java(:int))
-                else
-                  ShortMessage.new(*bytes)
-                end
+      if SYSEX_STATUS_BYTES.include?(data.first)
+        message = SysexMessage.new
+        message.set_message(bytes, data.length.to_java(:int))
+      else
+        message = ShortMessage.new
+        begin
+          message.set_message(*bytes)
+        rescue
+          # support older java versions
+          message.set_message(bytes)
+        end
+      end
       @receiver[device].send(message, device.get_microsecond_position)
       true
     end
